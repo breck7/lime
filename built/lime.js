@@ -144,6 +144,12 @@ class ContextNode extends jtree.NonTerminalNode {
                 const context = state.pushAnonContext(matchNode.getNode("push_context"));
                 consumed = context.handle(state, spans, nextMatch.end);
             }
+            else if (matchObj.set_context) {
+                state.log("set anon context");
+                state.contextStack.pop();
+                const context = state.pushAnonContext(matchNode.getNode("set_context"));
+                consumed = context.handle(state, spans, nextMatch.end);
+            }
             else if (matchNode.get("pop") === "true") {
                 state.log(`pop context '${state.currentContext.getId()}'. Return ${nextMatch.end}`);
                 state.contextStack.pop();
@@ -154,7 +160,7 @@ class ContextNode extends jtree.NonTerminalNode {
             else if (matchObj.set) {
                 state.log(`set context so pop '${state.currentContext.getId()}' and push 'matchObj.push'`);
                 state.contextStack.pop();
-                const context = state.pushContexts(matchObj.push);
+                const context = state.pushContexts(matchObj.set);
                 // TODO: how do back refs work with set?
                 context.backReferences = nextMatch.captured;
                 return context.handle(state, spans, nextMatch.end);

@@ -1,0 +1,17 @@
+name setcontexttest
+scope source.set
+contexts
+ main
+  match "
+   push quotes
+ quotes
+  match !
+   set_context
+    match .
+     scope foo._blue
+    match $
+     pop true
+  match "
+   pop true
+  match .
+   scope foo._orange

@@ -55,6 +55,7 @@
 @keyword set_context contextDef
  @highlightScope keyword.operator
 @keyword push_context contextDef
+ @highlightScope keyword.operator
 @keyword include
  @columns contextName
  @highlightScope keyword.control.import
@@ -67,6 +68,7 @@
  @description This assigns the given scope to all text within this context, including the patterns that push the context onto the stack and pop it off.
 @keyword meta_content_scope
  @columns scope
+ @highlightScope keyword.declaration
  @description Same as meta_scope, but does not apply to the text that triggers the context (e.g., in the above string example, the content scope would not get applied to the quote characters).
 @keyword clear_scopes
  @description This setting allows removing scope names from the current stack. It can be an integer, or the value true to remove all scope names. It is applied before meta_scope and meta_content_scope. This is typically only used when one syntax is embedding another.

@@ -1,0 +1,14 @@
+name pushcontexttest
+scope source.push
+contexts
+ main
+  match "
+   push_context
+    match "
+     pop true
+    match a
+     scope foo._orange
+    match b
+     scope foo._green
+  match .
+   scope foo._black

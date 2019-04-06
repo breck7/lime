@@ -1,0 +1,55 @@
+name Toy Python
+global_scope source.python
+contexts
+ else-pop
+  match (?=\S)
+   pop true
+ pop-eol
+  match $
+   pop true
+ main
+  include statements
+ statements
+  match (?=\s*\S)
+   push statement
+ statement
+  include pop-eol
+  match ^([\t ]*)(?=def)\b
+   set function-body function-def
+ function-body
+  meta_content_scope meta.function.python._blue
+  include indented-block
+ indented-block
+  match ^\s*$
+  match ^(?!\1[\t ]+\S)
+   pop true
+  include statements
+ function-def
+  match def\b
+   scope keyword.declaration.function.python._red
+   set expect-colon function-parameters function-name
+ expect-colon
+  match :
+   scope punctuation.separator.python._orange
+   pop true
+  include pop-eol
+  include else-pop
+ function-parameters
+  match \(
+   scope punctuation.section.group.begin.python._green
+   set_context
+    match \)
+     scope punctuation.section.group.end.python._yellow
+     pop true
+    match \w+
+     scope variable.parameter.python._purple
+    match ,
+     scope punctuation.separator.python._pink
+  include pop-eol
+  include else-pop
+ function-name
+  match \w+
+   scope entity.name.function.python._brown
+   pop true
+  include pop-eol
+  include else-pop
