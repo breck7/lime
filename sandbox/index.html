@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="/node_modules/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="lodash.min.js"></script>
+    <script type="text/javascript" src="/node_modules/jtree/built/jtree.browser.js"></script>
+    <script type="text/javascript" src="/built/lime.browser.js"></script>
+    <script type="text/javascript" src="sandbox.browser.js"></script>
+    <link rel="stylesheet" type="text/css" href="sandbox.css" />
+  </head>
+  <body>
+    <h1>Tree Language Sublime Syntax Highlighter Sandbox</h1>
+    <table><tr><td valign="top">Grammar:<br><textarea id="grammar">name C
+file_extensions c h
+global_scope source.c
+
+contexts:
+  main:
+    - match: \b(if|else|for|while)\b
+      scope: keyword.control.c
+    - match: '"'
+      push: string
+
+  string:
+    - meta_scope: string.quoted.double.c
+    - match: \\.
+      scope: constant.character.escape.c
+    - match: '"'
+      pop: true</textarea></td><td>Code:<br><textarea id="code">1 + 1;
+  23 + 232;;
+  2++2;zaaa
+
+  23</textarea></td></tr><tr><td valign="top">Parsed:<br><pre id="treeResults"></pre></td><td valign="top">Highlighted:<br><div id="highlighted"></div></td></tr></table>
+  </body>
+</html>

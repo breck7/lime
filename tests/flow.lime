@@ -1,0 +1,63 @@
+name Flow
+global_scope green
+contexts
+ main
+  include first_line
+ first_line
+  match  .*
+   scope red
+  match ^(?! )
+   push tiles
+ tiles
+  match tables.basic>
+   scope purple
+   push tile content
+  match views.list>
+   scope purple
+  match samples.iris>
+   scope purple
+   push tile content
+  match goog.pie>
+   scope purple
+  match apply.filter>
+   scope purple
+   push tile content
+  match social.reddit>
+   scope purple
+  match .
+   scope red
+ tile
+  match left
+   scope blue
+   push position space
+  match right
+   scope blue
+   push position space
+  match title
+   scope blue
+   push title space
+  include tiles
+  match .+
+   scope pink
+ title
+  match .+
+   scope gray
+  match $
+   pop true
+ space
+  match $
+   pop true
+  match  
+   pop true
+ position
+  match \d+
+   scope aqua
+  match .
+   scope red
+  match $
+   pop true
+ content
+  match [a-z \\d]
+   scope orange
+  match $
+   pop true

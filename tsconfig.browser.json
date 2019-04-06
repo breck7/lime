@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "outDir": "./built",
+    "lib": ["es6", "dom"],
+    "allowJs": true,
+    "target": "es6",
+    "removeComments": false
+  },
+  "include": ["./ignore/lime.browser.ts"]
+}

@@ -1,0 +1,15 @@
+name C
+file_extensions c h
+global_scope source.c
+contexts
+ main
+  match \b(if|else|for|while)\b
+   scope keyword.control.c._green
+  match "
+   push string
+ string
+  meta_scope string.quoted.double.c._blue
+  match \\.
+   scope constant.character.escape.c._purple
+  match "
+   pop true

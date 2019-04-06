@@ -1,0 +1,14 @@
+body {
+  font-family: Arial;
+}
+textarea {
+  width: 200px;
+  height: 300px;
+  font-size: 14px;
+}
+
+pre {
+  max-height: 250px;
+  max-width: 300px;
+  overflow: scroll;
+}

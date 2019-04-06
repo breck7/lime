@@ -1,0 +1,35 @@
+version 2.1
+name NAME
+file_extensions A B ...
+global_scope GLOBAL_SCOPE
+first_line_match <?php
+hidden false
+variables
+ ident '[A-Za-z_][A-Za-z_0-9]*'
+contexts
+ main
+  match \(
+   push brackets
+  match \)
+   scope SOMESCOPE
+ brackets
+  match \)
+   pop true
+  include main
+ for_stmt
+  match |
+   set for_stmt_expr1
+ main2
+  match \btypedef\b
+   scope keyword.control.c
+   set typedef_after_typename typename ...
+ typename
+  meta_scope string.unquoted.heredoc
+  match \bstruct\b
+   set_context
+    match {
+     set_context
+      match }
+       pop true
+  match \b[A-Za-z_][A-Za-z_0-9]*\b
+   pop true
