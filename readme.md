@@ -1,5 +1,7 @@
 # Lime
 
+![A screenshot](/screenshot.png "Screenshot")
+
 This package contains a rudimentary implementation of the sublime syntax highlighting engine that I made from reading the docs.
 
 NOTE: I have not implemented everything yet and in general it's at a _very_ early stage. Just sharing this online in response to a forum comment.
