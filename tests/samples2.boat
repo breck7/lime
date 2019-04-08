@@ -1,0 +1,12 @@
+pie Sample pie chart
+ table Sample data
+ size 22
+table Table of data
+ pie Pie chart
+ size 33
+ table foobar
+  size 22
+  pie
+   size 22
+   pie
+    size 21
