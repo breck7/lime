@@ -1,0 +1,13 @@
+def foo(x, y):
+    def bar(z):
+        two deep
+    one deep
+
+zero deep
+
+def baz(
+    a,
+    b,
+    c,
+):
+    one deep

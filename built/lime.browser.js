@@ -17,13 +17,15 @@ then one item for each capturing parenthesis that matched containing the text th
 class MatchNode extends jtree.NonTerminalNode {
     constructor() {
         super(...arguments);
-        // When a context has multiple patterns, the leftmost one will be found.
-        // When multiple patterns match at the same position, the first defined pattern will be selected.
-        this.match = /a/g;
         this.captures = {};
     }
-    getScopes() {
-        return this.has("scope") ? this.get("scope").split(" ") : [];
+    getScopes(state) {
+        const scopes = state.getScopeChain();
+        // If its a pop, dont include meta_content_scope of parent context.
+        if (this.get("pop") === "true" && state.currentContext.has("meta_content_scope"))
+            scopes.pop();
+        const newScopes = this.has("scope") ? this.get("scope").split(" ") : [];
+        return scopes.concat(newScopes);
     }
     getReg(state) {
         let reg = this.getContent();
@@ -80,10 +82,6 @@ class MatchNode extends jtree.NonTerminalNode {
 class Include {
 }
 class ContextNode extends jtree.NonTerminalNode {
-    constructor() {
-        super(...arguments);
-        this.backReferences = [];
-    }
     isMain() {
         return this.getId() === "main";
     }
@@ -94,17 +92,20 @@ class ContextNode extends jtree.NonTerminalNode {
         // todo: add includes and prototypes
         return this.items;
     }
+    _testLineAgainstAllMatchesAndGetSortedResults(state, consumed) {
+        const allMatchResults = this.getChildrenByNodeType(MatchNode).map(node => node.test(state.currentLine, state, consumed));
+        // Sort by left most.
+        return lodash.sortBy(lodash.flatten(allMatchResults), ["start"]);
+    }
     handle(state, spans, consumed = 0) {
         const line = state.currentLine;
-        state.log(`'${this.getKeyword()}' handling '${line}'`);
-        const allMatchResults = this.getChildrenByNodeType(MatchNode).map(node => node.test(line, state, consumed));
+        state.log(`context '${this.getKeyword()}' handling '${line}'. Part: '${line.substr(consumed)}'`);
         // Sort by left most.
-        const sorted = lodash.sortBy(lodash.flatten(allMatchResults), ["start"]);
+        const sortedMatches = this._testLineAgainstAllMatchesAndGetSortedResults(state, consumed);
         const len = line.length;
-        state.log(`${sorted.length} matches for '${line}'`);
-        while (consumed <= len && sorted.length) {
-            const nextMatch = sorted.shift();
-            const scopes = state.getScopeChain();
+        state.log(`${sortedMatches.length} matches for '${line}'`);
+        while (consumed <= len && sortedMatches.length) {
+            const nextMatch = sortedMatches.shift();
             state.log(`match '${nextMatch.text}' starts on position ${nextMatch.start} and consumed is ${consumed}`);
             if (nextMatch.start < consumed) {
                 state.log(`for match '${nextMatch.text}' and reg '${nextMatch.matchNode.getReg(state)}', nextMatch.start is ${nextMatch.start} and consumed is ${consumed}, continuing loop.`);
@@ -115,50 +116,39 @@ class ContextNode extends jtree.NonTerminalNode {
             if (nextMatch.start > consumed) {
                 spans.push({
                     text: line.substr(consumed, nextMatch.start - consumed),
-                    scopes: scopes
+                    scopes: state.getScopeChain()
                 });
                 state.log(`Added missing span between ${consumed} and ${nextMatch.start}`);
             }
             // Apply match
             const matchNode = nextMatch.matchNode;
-            const newScopes = scopes.concat(matchNode.getScopes());
-            spans.push({
+            const newSpan = {
                 text: nextMatch.text,
-                scopes: newScopes
-            });
-            state.currentContext.backReferences = nextMatch.captured;
-            state.log(`Added span for '${nextMatch.text}' with scopes '${newScopes}'`);
+                scopes: matchNode.getScopes(state)
+            };
+            spans.push(newSpan);
+            state.log(`Added new span for '${nextMatch.text}' with scopes '${newSpan.scopes}'`);
             const matchObj = matchNode.toObject();
             if (matchObj.push) {
-                state.log("push context " + matchObj.push);
-                const context = state.pushContexts(matchObj.push);
-                consumed = context.handle(state, spans, nextMatch.end);
+                // todo: if there is a metascope, we need to add that scope above.
+                consumed = state.pushContexts(matchObj.push, nextMatch.captured, newSpan).handle(state, spans, nextMatch.end);
             }
             else if (matchObj.push_context) {
-                state.log("push anon context");
-                const context = state.pushAnonContext(matchNode.getNode("push_context"));
-                consumed = context.handle(state, spans, nextMatch.end);
-            }
-            else if (matchObj.set_context) {
-                state.log("set anon context");
-                state.contextStack.pop();
-                const context = state.pushAnonContext(matchNode.getNode("set_context"));
-                consumed = context.handle(state, spans, nextMatch.end);
-            }
-            else if (matchNode.get("pop") === "true") {
-                state.log(`pop context '${state.currentContext.getId()}'. Return ${nextMatch.end}`);
-                state.contextStack.pop();
-                //state.currentContext.backReferences = [] Clear back refs ever?
-                // jump consumed
-                return state.currentContext.handle(state, spans, nextMatch.end);
+                consumed = state
+                    .pushAnonContext(matchNode.getNode("push_context"), nextMatch.captured, newSpan)
+                    .handle(state, spans, nextMatch.end);
             }
             else if (matchObj.set) {
-                state.log(`set context so pop '${state.currentContext.getId()}' and push 'matchObj.push'`);
-                state.contextStack.pop();
-                const context = state.pushContexts(matchObj.set);
-                // TODO: how do back refs work with set?
-                context.backReferences = nextMatch.captured;
-                return context.handle(state, spans, nextMatch.end);
+                return state.setContext(matchObj.set, nextMatch.captured, newSpan).handle(state, spans, nextMatch.end);
+            }
+            else if (matchObj.set_context) {
+                return state
+                    .setAnonContext(matchNode.getNode("set_context"), nextMatch.captured, newSpan)
+                    .handle(state, spans, nextMatch.end);
+            }
+            else if (matchNode.get("pop") === "true") {
+                state.popContext();
+                return state.currentContext.handle(state, spans, nextMatch.end);
             }
             else {
                 consumed = nextMatch.end;
@@ -173,52 +163,86 @@ class ContextNode extends jtree.NonTerminalNode {
             });
             consumed = len; // Minus 1 or 1?
         }
-        state.log("handled line.");
+        state.log(`handled line. '${line}'`);
         return consumed;
     }
 }
 class State {
     constructor(program) {
-        this.contextStack = [];
+        this._messageNumber = 0;
+        this._contextStack = [];
+        this._backReferenceStack = [];
         this._program = program;
-        this.contextStack.push(program.getMainContext());
+        this.pushAnonContext(program.getMainContext(), []);
     }
     log(...obj) {
-        if (this._program.verbose)
-            console.log(this.currentLine + ": ", ...obj);
+        if (this._program.verbose) {
+            this._messageNumber++;
+            console.log(`${this._messageNumber}. line: '${this.currentLine}'. context: '${this.getCurrentStackStr()}' `, ...obj);
+        }
     }
     logError(...obj) {
         if (this._program.verbose)
             console.error(this.currentLine + ": ", ...obj);
     }
     getContextChain() {
-        return this.contextStack.map(context => context.getId()).join(" ");
+        return this._contextStack.map(context => context.getId()).join(" ");
     }
     getScopeChain() {
-        const arr = this.contextStack.map(context => context.get("meta_scope")).filter(i => i);
-        arr.unshift(this._program.scope);
-        return arr;
+        const scopes = [this._program.scope];
+        this._contextStack.forEach(context => {
+            const meta_scope = context.get("meta_scope");
+            const meta_content_scope = context.get("meta_content_scope");
+            if (!meta_scope && !meta_content_scope)
+                return;
+            scopes.push(meta_scope || meta_content_scope);
+        });
+        return scopes;
+    }
+    getContextCount() {
+        return this._contextStack.length;
     }
     getBackReferences() {
-        if (this.contextStack.length === 1)
-            return [];
-        return this.contextStack[this.contextStack.length - 2].backReferences;
+        return this._backReferenceStack[this._backReferenceStack.length - 1];
     }
-    pushAnonContext(context) {
-        this.contextStack.push(context);
-        return context;
-    }
-    pushContexts(names) {
+    pushContexts(names, backReferences, span) {
         names.split(" ").forEach(name => {
             const context = this._program.getNode("contexts " + name);
             if (!context)
                 throw new Error(`${name} context not found`);
-            this.contextStack.push(context);
+            this._contextStack.push(context);
+            this._backReferenceStack.push(backReferences);
+            if (context.has("meta_scope"))
+                span.scopes.push(context.get("meta_scope"));
         });
         return this.currentContext;
     }
+    pushAnonContext(context, backReferences, span) {
+        if (context.has("meta_scope"))
+            span.scopes.push(context.get("meta_scope"));
+        this._contextStack.push(context);
+        this._backReferenceStack.push(backReferences);
+        return context;
+    }
+    setContext(names, backReferences, span) {
+        this.popContext();
+        return this.pushContexts(names, backReferences, span);
+    }
+    setAnonContext(context, backReferences, span) {
+        this.popContext();
+        return this.pushAnonContext(context, backReferences, span);
+    }
+    popContext() {
+        this._backReferenceStack.pop();
+        const popped = this._contextStack.pop();
+        this.log(`popped context ${popped.getId()}. ${this.getContextCount()} contexts on stack`);
+        return popped;
+    }
+    getCurrentStackStr() {
+        return this._contextStack.map(context => context.getId()).join(" ");
+    }
     get currentContext() {
-        return this.contextStack[this.contextStack.length - 1];
+        return this._contextStack[this._contextStack.length - 1];
     }
 }
 class Line {
@@ -269,7 +293,7 @@ contexts:`;
         return this.getNode("file_extensions").getWordsFrom(1);
     }
     get scope() {
-        return this.get("global_scope") || "brown";
+        return this.get("global_scope") || "";
     }
     toHtml(content) {
         const tree = new jtree.TreeNode(content);

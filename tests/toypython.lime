@@ -20,7 +20,9 @@ contexts
   meta_content_scope meta.function.python._blue
   include indented-block
  indented-block
+  # Ignore empty line
   match ^\s*$
+  # pop off at a none-empty line with same indention as `def`
   match ^(?!\1[\t ]+\S)
    pop true
   include statements
@@ -37,6 +39,7 @@ contexts
  function-parameters
   match \(
    scope punctuation.section.group.begin.python._green
+   # todo: need to make set_context work.
    set_context
     match \)
      scope punctuation.section.group.end.python._yellow

@@ -1,0 +1,35 @@
+{
+  "name": "lime",
+  "version": "1.0.0",
+  "description": "![A screenshot](/screenshot.png \"Screenshot\")",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "express": "^4.16.4",
+    "jquery": "^3.3.1",
+    "jtree": "^17.1.3",
+    "lodash": "^4.17.11",
+    "recursive-readdir-sync": "^1.0.6",
+    "tap-mocha-reporter": "^4.0.1",
+    "ts-node": "^8.0.3"
+  },
+  "devDependencies": {
+    "tap": "^12.6.0"
+  },
+  "scripts": {
+    "test": "tap test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/breck7/lime.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/breck7/lime/issues"
+  },
+  "homepage": "https://github.com/breck7/lime#readme"
+}

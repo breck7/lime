@@ -4,6 +4,7 @@ const jtree = require("jtree")
 const cheerio = require("cheerio")
 const fs = require("fs")
 const tap = require("tap")
+const read = path => fs.readFileSync(path, "utf8")
 
 const LimeConstructor = jtree.getProgramConstructor(__dirname + "/../lime.grammar")
 
@@ -93,6 +94,46 @@ contexts
   equal(errs.length, 2, "2 errors")
 }
 
+testTree.metaScope = (equal, isColor) => {
+  const program = new LimeConstructor(
+    read("/Users/breck/Library/Application Support/Sublime Text 3/Packages/TreeNotation/lime/tests/c.lime")
+  )
+  program.verbose = false
+
+  const results = program.execute(`if "test"`)
+
+  const html = program.toHtml(results)
+
+  isColor(html, "if", "green")
+  isColor(html, "test", "blue")
+  isColor(html, '"', "blue")
+}
+
+testTree.metaContentScope = (equal, isColor) => {
+  const program = new LimeConstructor(
+    `global_scope source._gray
+contexts
+ main
+  match \\b(if)\\b
+   scope keyword.control.c._green
+  match "
+   push string
+ string
+  meta_content_scope string.quoted.double.c._blue
+  match "
+   pop true`
+  )
+  program.verbose = false
+
+  const results = program.execute(`if "test"`)
+
+  const html = program.toHtml(results)
+
+  isColor(html, "if", "green")
+  isColor(html, "test", "blue")
+  isColor(html, '"', "gray")
+}
+
 testTree.digits = (equal, isColor) => {
   const grammar = `version 2.1
 name dag
@@ -131,7 +172,7 @@ contexts
 }
 
 testTree.flow = (equal, isColor) => {
-  const grammar = fs.readFileSync(__dirname + "/flow.lime", "utf8")
+  const grammar = read(__dirname + "/flow.lime")
 
   const program = new LimeConstructor(grammar)
   program.verbose = false
@@ -139,7 +180,7 @@ testTree.flow = (equal, isColor) => {
   const errs = program.getProgramErrors()
   equal(errs.length, 0, "no errors")
 
-  let html = program.toHtml(program.execute(fs.readFileSync(__dirname + "/sample.flow", "utf8")))
+  let html = program.toHtml(program.execute(read(__dirname + "/sample.flow")))
   save("flow", html)
 
   isColor(html, "sam", "red")
@@ -163,7 +204,7 @@ const runTests = testTree => {
   testsToRun.forEach(key => {
     tap.test(key, function(childTest) {
       const testCase = testTree[key](childTest.equal, (html, text, color) => {
-        let el = cheerio.load(html)(`span:contains(${text})`)
+        let el = cheerio.load(html)(`span:contains('${text}')`)
         if (!el.length) childTest.equal(false, true, `No ${text} found`)
         else childTest.equal(el.css("color"), color, text)
       })
