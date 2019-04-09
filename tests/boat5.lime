@@ -42,25 +42,43 @@ contexts
   meta_content_scope meta.function.pie-scope._blue
   include scope-popper
   include no-blanks
-  include pie-keywords
-  include main-keywords
+  match (?= *[^ ])
+   push pie-keywords
  pie-keywords
-  include pie-size-line
-  include pie-title-line
+  include pie-size-keyword
+  include pie-title-keyword
+  include pie-description-keyword
+  include main-keyword
+ pie-size-keyword
+  match ^( *)(?=size)\b
+   set pie-size-scope pie-size-line
+ pie-description-keyword
+  match ^( *)(?=description)\b
+   set pie-description-scope pie-description-line
+ pie-title-keyword
+  match ^( *)(?=title)\b
+   set pie-title-scope pie-title-line
+ pie-size-scope
+  include pop-eol
+ pie-description-scope
+  meta_content_scope keyword.control.c.pie-size-line._tan
+  include scope-popper
  pie-size-line
-  match ^\1 size
-   scope punctuation.separator.pie-scope._pink
-   push_context
-    match \d+
-     scope keyword.control.c.pie-scope._teal
-     pop true
+  match size\b
+   scope keyword.control.c.pie-size-line._orange
+  include any-line
+ pie-description-line
+  match description\b
+   scope keyword.control.c.pie-size-line._orange
+  match .*
+   scope keyword.control.c.pie-size-line._tan
+  include pop-eol
+ pie-title-scope
+  include pop-eol
  pie-title-line
-  match ^\1 title
-   scope punctuation.separator.pie-scope._pink
-   push_context
-    match .*$
-     scope keyword.control.c.pie-scope._tan
-     pop true
+  match title\b
+   scope keyword.control.c.pie-title-line._orange
+  include any-line
  pie-line
   match pie\b
    scope keyword.control.c.pie-line._green
