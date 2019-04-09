@@ -103,9 +103,9 @@ class MatchNode extends jtree.NonTerminalNode implements ContextStatement {
     let re = new RegExp(reg, "g")
 
     // Only should break for lookbehinds?
-    line = line.substr(consumed)
+    //line = line.substr(consumed)
     // This will start things at consumed, but allow for lookbehinds.
-    //re.lastIndex = consumed
+    re.lastIndex = consumed
     const backRefs = state.getBackReferences()
 
     let startChar = -1
@@ -123,8 +123,8 @@ class MatchNode extends jtree.NonTerminalNode implements ContextStatement {
         index++
       }
       const result: MatchResult = {
-        start: match.index + consumed,
-        end: text.length + match.index + consumed,
+        start: match.index,
+        end: text.length + match.index,
         text: text,
         captured: captured,
         matchNode: this,
@@ -192,12 +192,14 @@ class ContextNode extends jtree.NonTerminalNode {
 
   handle(state: State, spans, consumed = 0): number {
     const line = state.currentLine
-    state.log(`context '${this.getKeyword()}' handling '${line}'. Part: '${line.substr(consumed)}'`)
-
     // Sort by left most.
     const sortedMatches = this._testLineAgainstAllMatchesAndGetSortedResults(state, consumed)
     const len = line.length
-    state.log(`${sortedMatches.length} matches for '${line}'`)
+    state.log(
+      `context '${this.getKeyword()}' handling '${line}'. Part: '${line.substr(consumed)}'. ${
+        sortedMatches.length
+      } matches for '${line}'`
+    )
     while (consumed <= len && sortedMatches.length) {
       const nextMatch = sortedMatches.shift()
 

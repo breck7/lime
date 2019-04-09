@@ -43,15 +43,16 @@ class MatchNode extends jtree.NonTerminalNode {
         }
         return reg;
     }
-    test(line, state, consumed) {
+    testLine(line, state, consumed) {
         let match;
         let matches = [];
         let reg = this.getReg(state);
         let re = new RegExp(reg, "g");
         // Only should break for lookbehinds?
-        line = line.substr(consumed);
+        //line = line.substr(consumed)
         // This will start things at consumed, but allow for lookbehinds.
-        //re.lastIndex = consumed
+        re.lastIndex = consumed;
+        const backRefs = state.getBackReferences();
         let startChar = -1;
         while ((match = re.exec(line)) !== null) {
             // protect against infinite loops, ie if regex is ^
@@ -68,18 +69,19 @@ class MatchNode extends jtree.NonTerminalNode {
                 index++;
             }
             const result = {
-                start: match.index + consumed,
-                end: text.length + match.index + consumed,
+                start: match.index,
+                end: text.length + match.index,
                 text: text,
                 captured: captured,
-                matchNode: this
+                matchNode: this,
+                usedRegString: reg,
+                usedBackReferences: backRefs,
+                usedLine: line
             };
             matches.push(result);
         }
-        if (matches.length)
-            state.log(`'${line}' matched '${reg}'`, matches);
-        else
-            state.log(`'${line}' no match on '${reg}'`);
+        // if (matches.length) state.log(`'${line}' matched '${reg}'`, matches)
+        // else state.log(`'${line}' no match on '${reg}'`)
         return matches;
     }
 }
@@ -98,7 +100,7 @@ class ContextNode extends jtree.NonTerminalNode {
         return this.items;
     }
     _testLineAgainstAllMatchesAndGetSortedResults(state, consumed) {
-        const allMatchResults = this.getChildrenByNodeType(MatchNode).map(node => node.test(state.currentLine, state, consumed));
+        const allMatchResults = this.getChildrenByNodeType(MatchNode).map(node => node.testLine(state.currentLine, state, consumed));
         // Sort by left most.
         return lodash.sortBy(lodash.flatten(allMatchResults), ["start"]);
     }
@@ -111,7 +113,7 @@ class ContextNode extends jtree.NonTerminalNode {
         state.log(`${sortedMatches.length} matches for '${line}'`);
         while (consumed <= len && sortedMatches.length) {
             const nextMatch = sortedMatches.shift();
-            state.log(`match '${nextMatch.text}' starts on position ${nextMatch.start} and consumed is ${consumed}`);
+            // state.log(`match '${nextMatch.text}' starts on position ${nextMatch.start} and consumed is ${consumed}`)
             if (nextMatch.start < consumed) {
                 state.log(`for match '${nextMatch.text}' and reg '${nextMatch.matchNode.getReg(state)}', nextMatch.start is ${nextMatch.start} and consumed is ${consumed}, continuing loop.`);
                 state.log("for some reason start is less than consumed. why? note this in code.");
@@ -132,8 +134,8 @@ class ContextNode extends jtree.NonTerminalNode {
                 scopes: matchNode.getScopes(state)
             };
             spans.push(newSpan);
-            state.log(`Added new span for '${nextMatch.text}' with scopes '${newSpan.scopes}'`);
             const matchObj = matchNode.toObject();
+            state.log(`Added new span for '${nextMatch.text}' with scopes '${newSpan.scopes.join(" ")}'`, nextMatch);
             if (matchObj.push) {
                 // todo: if there is a metascope, we need to add that scope above.
                 consumed = state.pushContexts(matchObj.push, nextMatch.captured, newSpan).handle(state, spans, nextMatch.end);
@@ -168,7 +170,7 @@ class ContextNode extends jtree.NonTerminalNode {
             });
             consumed = len; // Minus 1 or 1?
         }
-        state.log(`handled line. '${line}'`);
+        //state.log(`handled line. '${line}'`)
         return consumed;
     }
 }
