@@ -1,0 +1,61 @@
+name Boat2
+global_scope boat2
+contexts
+ pop-eol
+  match $
+   pop true
+ scope-popper
+  # pop at root-level
+  match ^(?=[^ ])
+   pop true
+  # pop off at a line with less indention as this scope
+  match ^(?!\1)
+   pop true
+  # pop off at a line with same indention as this scope
+  match ^(?=\1[^ ])
+   pop true
+ main
+  include main-keywords
+ main-keywords
+  match (?= *[^ ])
+   push main-keyword
+ main-keyword
+  include pop-eol
+  match ^( *)(?=table)\b
+   set table-scope table-line
+  match ^( *)(?=pie)\b
+   set pie-scope pie-line
+ pie-scope
+  meta_content_scope meta.function.pie-scope._blue
+  include scope-popper
+  match ^\1 size
+   scope punctuation.separator.pie-scope._pink
+   push_context
+    match \d+
+     scope keyword.control.c.pie-scope._teal
+     pop true
+  include main-keywords
+ pie-line
+  match pie\b
+   scope keyword.control.c.pie-line._green
+   set pie-words
+ pie-words
+  match \w+
+   scope variable.parameter.pie-words._purple
+  match ' '
+   scope punctuation.separator.pie-words._pink
+  include pop-eol
+ table-scope
+  meta_content_scope meta.function.table-scope._blue
+  include scope-popper
+  include main-keywords
+ table-line
+  match table\b
+   scope keyword.control.c.table-line._green
+   set table-words
+ table-words
+  match \w+
+   scope variable.parameter.table-words._purple
+  match ' '
+   scope punctuation.separator.table-words._pink
+  include pop-eol
