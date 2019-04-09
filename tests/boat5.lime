@@ -17,6 +17,12 @@ contexts
  no-blanks
   match ^\1  .*$
    scope punctuation.separator.no-blanks._red
+ any-line
+  match \w+
+   scope variable.parameter.any-line._purple
+  match ' '
+   scope punctuation.separator.any-line._pink
+  include pop-eol
  main
   include main-keywords
  main-keywords
@@ -24,10 +30,14 @@ contexts
    push main-keyword
  main-keyword
   include pop-eol
-  match ^( *)(?=table)\b
-   set table-scope table-line
+  include pie-keyword
+  include table-keyword
+ pie-keyword
   match ^( *)(?=pie)\b
    set pie-scope pie-line
+ table-keyword
+  match ^( *)(?=table)\b
+   set table-scope table-line
  pie-scope
   meta_content_scope meta.function.pie-scope._blue
   include scope-popper
@@ -35,22 +45,26 @@ contexts
   include pie-keywords
   include main-keywords
  pie-keywords
+  include pie-size-line
+  include pie-title-line
+ pie-size-line
   match ^\1 size
    scope punctuation.separator.pie-scope._pink
    push_context
     match \d+
      scope keyword.control.c.pie-scope._teal
      pop true
+ pie-title-line
+  match ^\1 title
+   scope punctuation.separator.pie-scope._pink
+   push_context
+    match .*$
+     scope keyword.control.c.pie-scope._tan
+     pop true
  pie-line
   match pie\b
    scope keyword.control.c.pie-line._green
-   set pie-words
- pie-words
-  match \w+
-   scope variable.parameter.pie-words._purple
-  match ' '
-   scope punctuation.separator.pie-words._pink
-  include pop-eol
+  include any-line
  table-scope
   meta_content_scope meta.function.table-scope._blue
   include scope-popper
@@ -59,10 +73,4 @@ contexts
  table-line
   match table\b
    scope keyword.control.c.table-line._green
-   set table-words
- table-words
-  match \w+
-   scope variable.parameter.table-words._purple
-  match ' '
-   scope punctuation.separator.table-words._pink
-  include pop-eol
+  include any-line
