@@ -95,22 +95,25 @@ class ContextNode extends jtree.NonTerminalNode {
     getId() {
         return this.getKeyword();
     }
-    getExpanded() {
-        // todo: add includes and prototypes
-        return this.items;
-    }
     _testLineAgainstAllMatchesAndGetSortedResults(state, consumed) {
         const allMatchResults = this.getChildrenByNodeType(MatchNode).map(node => node.testLine(state.currentLine, state, consumed));
         // Sort by left most.
         return lodash.sortBy(lodash.flatten(allMatchResults), ["start"]);
     }
+    expandContext() {
+        this.findNodes("include").forEach(node => {
+            const includedContext = this.getParent().getNode(node.getContent());
+            includedContext.expandContext();
+            // patch?
+            node.replaceNode(str => includedContext.childrenToString());
+        });
+    }
     handle(state, spans, consumed = 0) {
         const line = state.currentLine;
-        state.log(`context '${this.getKeyword()}' handling '${line}'. Part: '${line.substr(consumed)}'`);
         // Sort by left most.
         const sortedMatches = this._testLineAgainstAllMatchesAndGetSortedResults(state, consumed);
         const len = line.length;
-        state.log(`${sortedMatches.length} matches for '${line}'`);
+        state.log(`context '${this.getKeyword()}' handling '${line}'. Part: '${line.substr(consumed)}'. ${sortedMatches.length} matches for '${line}'`);
         while (consumed <= len && sortedMatches.length) {
             const nextMatch = sortedMatches.shift();
             // state.log(`match '${nextMatch.text}' starts on position ${nextMatch.start} and consumed is ${consumed}`)
@@ -327,13 +330,8 @@ contexts:`;
             "</div>");
     }
     expand() {
-        this.getNode("contexts").forEach(context => {
-            context.findNodes("include").forEach(inc => {
-                const included = this.getNode(`contexts ${inc.getContent()}`);
-                // patch?
-                inc.replaceNode(str => included.childrenToString());
-            });
-        });
+        this.getMainContext().expandContext();
+        this.getNode("contexts").forEach(context => context.expandContext());
     }
     execute(content) {
         this.expand();

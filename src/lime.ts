@@ -176,11 +176,6 @@ class ContextNode extends jtree.NonTerminalNode {
   // This is typically only used when one syntax is embedding another.
   public clear_scopes: boolean | number
 
-  getExpanded() {
-    // todo: add includes and prototypes
-    return this.items
-  }
-
   _testLineAgainstAllMatchesAndGetSortedResults(state: State, consumed: number) {
     const allMatchResults: MatchResult[][] = this.getChildrenByNodeType(MatchNode).map(node =>
       (<MatchNode>node).testLine(state.currentLine, state, consumed)
@@ -188,6 +183,15 @@ class ContextNode extends jtree.NonTerminalNode {
 
     // Sort by left most.
     return lodash.sortBy(lodash.flatten(allMatchResults), ["start"])
+  }
+
+  expandContext() {
+    this.findNodes("include").forEach(node => {
+      const includedContext = this.getParent().getNode(node.getContent())
+      includedContext.expandContext()
+      // patch?
+      node.replaceNode(str => includedContext.childrenToString())
+    })
   }
 
   handle(state: State, spans, consumed = 0): number {
@@ -466,13 +470,8 @@ contexts:`
   }
 
   expand() {
-    this.getNode("contexts").forEach(context => {
-      context.findNodes("include").forEach(inc => {
-        const included = this.getNode(`contexts ${inc.getContent()}`)
-        // patch?
-        inc.replaceNode(str => included.childrenToString())
-      })
-    })
+    this.getMainContext().expandContext()
+    this.getNode("contexts").forEach(context => context.expandContext())
   }
 
   execute(content: string): string {

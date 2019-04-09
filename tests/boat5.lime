@@ -1,5 +1,5 @@
-name Boat2
-global_scope boat2
+name Boat5
+global_scope boat5
 contexts
  pop-eol
   match $
@@ -14,6 +14,9 @@ contexts
   # pop off at a line with same indention as this scope
   match ^(?=\1[^ ])
    pop true
+ no-blanks
+  match ^\1  .*$
+   scope punctuation.separator.no-blanks._red
  main
   include main-keywords
  main-keywords
@@ -28,13 +31,16 @@ contexts
  pie-scope
   meta_content_scope meta.function.pie-scope._blue
   include scope-popper
+  include no-blanks
+  include pie-keywords
+  include main-keywords
+ pie-keywords
   match ^\1 size
    scope punctuation.separator.pie-scope._pink
    push_context
     match \d+
      scope keyword.control.c.pie-scope._teal
      pop true
-  include main-keywords
  pie-line
   match pie\b
    scope keyword.control.c.pie-line._green
@@ -48,6 +54,7 @@ contexts
  table-scope
   meta_content_scope meta.function.table-scope._blue
   include scope-popper
+  include no-blanks
   include main-keywords
  table-line
   match table\b

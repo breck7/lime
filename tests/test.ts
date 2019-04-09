@@ -109,6 +109,49 @@ testTree.metaScope = (equal, isColor) => {
   isColor(html, '"', "blue")
 }
 
+// TODO: JS regex engine does not give you position of captures, so this is a tougher problem.
+// testTree.captures = (equal, isColor) => {
+//   const program = new LimeConstructor(
+//     `global_scope source._gray
+// contexts
+//  main
+//   match ^\\s*(#)\\s*\\b(include)\\b
+//   captures
+//    1 meta.preprocessor.c++.hashtag._blue
+//    2 keyword.control.include.c++.include._red`
+//   )
+//   program.verbose = false
+
+//   const results = program.execute(`#include foobar`)
+
+//   const html = program.toHtml(results)
+
+//   isColor(html, "#", "blue")
+//   isColor(html, "include", "red")
+//   isColor(html, "foobar", "gray")
+// }
+
+testTree.nestedIncludes = (equal, isColor) => {
+  const program = new LimeConstructor(
+    `global_scope source._gray
+contexts
+ main
+  include first
+ first
+  include second
+ second
+  match b
+   scope string.quoted.double.c._blue`
+  )
+  program.verbose = false
+
+  const results = program.execute(`ba`)
+
+  const html = program.toHtml(results)
+
+  isColor(html, "b", "blue")
+}
+
 testTree.metaContentScope = (equal, isColor) => {
   const program = new LimeConstructor(
     `global_scope source._gray
