@@ -402,16 +402,6 @@ class ProgramNode extends jtree.program {
   public first_line_match = ""
   public verbose = true
 
-  toYAML() {
-    return `%YAML 1.2
----
-name: ${this.name}
-file_extensions: [${this.file_extensions.join(",")}]
-scope: ${this.scope}
-
-contexts:`
-  }
-
   public variables: { [name: string]: string } = {}
 
   public contexts: { [name: string]: ContextNode } = {
@@ -430,7 +420,8 @@ contexts:`
   }
 
   public get file_extensions(): string[] {
-    return this.getNode("file_extensions").getWordsFrom(1)
+    const exts = this.getNode("file_extensions")
+    return exts ? exts.getWordsFrom(1) : [this.name]
   }
 
   public get scope(): string {

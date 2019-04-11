@@ -282,15 +282,6 @@ class ProgramNode extends jtree.program {
             main: new ContextNode()
         };
     }
-    toYAML() {
-        return `%YAML 1.2
----
-name: ${this.name}
-file_extensions: [${this.file_extensions.join(",")}]
-scope: ${this.scope}
-
-contexts:`;
-    }
     get name() {
         return this.get("name") || "UnnamedGrammar";
     }
@@ -301,7 +292,8 @@ contexts:`;
         return main;
     }
     get file_extensions() {
-        return this.getNode("file_extensions").getWordsFrom(1);
+        const exts = this.getNode("file_extensions");
+        return exts ? exts.getWordsFrom(1) : [this.name];
     }
     get scope() {
         return this.get("global_scope") || "";

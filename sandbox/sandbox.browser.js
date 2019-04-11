@@ -9,6 +9,8 @@ const main = grammarCode => {
   const either = $("#code,#grammar")
   const treeResults = $("#treeResults")
   const highlighted = $("#highlighted")
+  const toYaml = $("#toYaml")
+
   either.on("keyup", function() {
     const code = $("#code").val()
     const program = new LimeConstructor(grammarArea.val().replace(/\/\//g, "/"))
@@ -19,6 +21,7 @@ const main = grammarCode => {
     treeResults.html(lodash.escape(results))
     const html = program.toHtml(results)
     highlighted.html(html)
+    toYaml.val(program.toYaml())
   })
 
   either.on("blur", function() {

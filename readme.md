@@ -2,13 +2,15 @@
 
 ![A screenshot](/screenshot.png "Screenshot")
 
+[Try it out](http://lime.treenotation.org/sandbox/)
+
 This package contains a rudimentary implementation of the sublime syntax highlighting engine that I made from reading the docs.
 
-NOTE: I have not implemented everything yet and in general it's at a _very_ early stage. Just sharing this online in response to a forum comment.
+NOTE: I have not implemented everything yet and in general it's at a _very_ early stage. Just sharing this online in case someone else in the forums might find this useful.
 
 Lime takes:
 
-- takes a ".sublime-syntax" YAML file (actually, it takes a ".lime" file which is just like that except with Tree Notation syntax) for a language
+- a ".sublime-syntax" YAML file (actually, it takes a ".lime" file which is just like that except with Tree Notation syntax) for a language
 - source code for that language
 
 Lime generates:
