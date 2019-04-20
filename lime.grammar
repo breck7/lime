@@ -1,7 +1,9 @@
 @grammar lime
  @description Builds a sublime-syntax file.
  @catchAllKeyword error
- @constructor js ./built/lime.js ProgramNode
+ @constructors
+  nodejs ./built/lime.js ProgramNode
+  browser lime.ProgramNode
  @keywords
   rootLevel
 @abstract rootLevel
@@ -46,7 +48,9 @@
  @catchAllKeyword contextDef
  @highlightScope entity.name
 @keyword contextDef
- @constructor js ./built/lime.js ContextNode
+ @constructors
+  nodejs ./built/lime.js ContextNode
+  browser lime.ContextNode
  @keywords
   match
   include
@@ -96,7 +100,9 @@
 @keyword capture
  @columns scope
 @keyword match
- @constructor js ./built/lime.js MatchNode
+ @constructors
+  nodejs ./built/lime.js MatchNode
+  browser lime.MatchNode
  @columns regex*
  @highlightScope keyword.control
  @keywords
@@ -110,4 +116,6 @@
   embed
   captures
 @keyword error
- @constructor js ErrorNode
+ @constructors
+  nodejs ErrorNode
+  browser ErrorNode

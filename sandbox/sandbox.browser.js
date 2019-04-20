@@ -5,40 +5,47 @@ const main = grammarCode => {
   const LimeConstructor = grammarProgram.getRootConstructor()
 
   const codeArea = $("#code")
-  const grammarArea = $("#grammar")
-  const either = $("#code,#grammar")
+  const limeArea = $("#limeConsole")
+  const either = $("#code,#limeConsole")
   const treeResults = $("#treeResults")
   const highlighted = $("#highlighted")
   const toYaml = $("#toYaml")
 
-  either.on("keyup", function() {
-    const code = $("#code").val()
-    const program = new LimeConstructor(grammarArea.val().replace(/\/\//g, "/"))
+  const update = () => {
+    const program = new LimeConstructor(limeInstance.getValue().replace(/\/\//g, "/"))
 
     const grammarErrors = program.getProgramErrors()
 
-    const results = program.execute(code)
+    const results = program.execute(codeArea.val())
     treeResults.html(lodash.escape(results))
     const html = program.toHtml(results)
     highlighted.html(html)
     toYaml.val(program.toYaml())
-  })
+  }
 
-  either.on("blur", function() {
-    localStorage.setItem("grammar", grammarArea.val())
-    localStorage.setItem("code", $("#code").val())
-  })
+  const save = () => {
+    localStorage.setItem("limeConsole", limeInstance.getValue())
+    localStorage.setItem("code", codeArea.val())
+  }
 
-  const grammar = localStorage.getItem("grammar")
+  const grammar = localStorage.getItem("limeConsole")
   const code = localStorage.getItem("code")
-  if (grammar) grammarArea.val(grammar)
+  if (grammar) limeArea.val(grammar)
   if (code) codeArea.val(code)
 
-  grammarArea.keyup()
+  const limeInstance = new jtree.TreeNotationCodeMirrorMode("lime", () => LimeConstructor, undefined, CodeMirror)
+    .register()
+    .fromTextAreaWithAutocomplete(limeArea[0], { lineWrapping: true })
+
+  codeArea.on("blur", save)
+  codeArea.on("keyup", update)
+
+  limeInstance.on("blur", save)
+  limeInstance.on("keyup", update)
+
+  update()
 }
 
 $(document).ready(function() {
-  $.get("/lime.grammar", function(data) {
-    main(data)
-  })
+  $.get("/lime.grammar", main)
 })

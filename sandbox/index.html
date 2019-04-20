@@ -2,11 +2,15 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <script type="text/javascript" src="jquery.min.js"></script>
-    <script type="text/javascript" src="lodash.min.js"></script>
-    <script type="text/javascript" src="jtree.browser.js"></script>
+    <script type="text/javascript" src="lib/jquery.min.js"></script>
+    <script type="text/javascript" src="lib/lodash.min.js"></script>
+    <script type="text/javascript" src="lib/codemirror.js"></script>
+    <script type="text/javascript" src="lib/show-hint.js"></script>
+    <script type="text/javascript" src="lib/jtree.browser.js"></script>
     <script type="text/javascript" src="/built/lime.browser.js"></script>
     <script type="text/javascript" src="sandbox.browser.js"></script>
+    <link rel="stylesheet" type="text/css" href="lib/codemirror.css" />
+    <link rel="stylesheet" type="text/css" href="lib/codemirror.show-hint.css" />
     <link rel="stylesheet" type="text/css" href="sandbox.css" />
   </head>
   <body>
@@ -14,33 +18,28 @@
     <table>
       <tr>
         <td valign="top">
-          Grammar (Lime file):<br /><textarea id="grammar">
+          Lime file:<br /><textarea id="limeConsole">
 name C
 file_extensions c h
 global_scope source.c
-
-contexts:
-  main:
-    - match: \b(if|else|for|while)\b
-      scope: keyword.control.c
-    - match: '"'
-      push: string
-
-  string:
-    - meta_scope: string.quoted.double.c
-    - match: \\.
-      scope: constant.character.escape.c
-    - match: '"'
-      pop: true</textarea
+contexts
+ main
+  match \b(if|else|for|while)\b
+   scope keyword.control.c._green
+  match "
+   push string
+ string
+  meta_scope string.quoted.double.c._blue
+  match \\.
+   scope constant.character.escape.c._purple
+  match "
+   pop true</textarea
           >
         </td>
         <td>
           Code:<br /><textarea id="code">
-1 + 1;
-  23 + 232;;
-  2++2;zaaa
-
-  23</textarea
+if true:
+ "hello world"</textarea
           >
         </td>
       </tr>
