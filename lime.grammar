@@ -1,111 +1,113 @@
-@grammar lime
- @description Builds a sublime-syntax file.
- @catchAllKeyword error
- @constructors
+grammar
+ name lime
+ description Builds a sublime-syntax file.
+ catchAllKeyword error
+ constructors
   nodejs ./built/lime.js ProgramNode
   browser lime.ProgramNode
- @keywords
+ keywords
   rootLevel
-@abstract rootLevel
-@wordType any
-@wordType string any
- @highlightScope string
-@wordType comment any
- @highlightScope comment
-@wordType float
-@wordType bool
-@wordType true
- @regex true
- @highlightScope constant.numeric
-@wordType scope any
- @highlightScope variable.parameter
-@wordType regex any
- @highlightScope string.regexp
-@wordType contextName any
-@keyword any rootLevel
- @columns any*
-@keyword name any
- @highlightScope constant.language
-@keyword version rootLevel
- @highlightScope constant.language
- @columns float
-@keyword file_extensions any
- @highlightScope constant.language
-@keyword global_scope any
- @highlightScope constant.language
-@keyword hidden rootLevel
- @highlightScope constant.language
- @columns bool
-@keyword first_line_match any
- @columns string*
- @highlightScope constant.language
-@keyword variableDef
- @columns any regex*
-@keyword variables any
- @catchAllKeyword variableDef
- @highlightScope entity.name
-@keyword contexts rootLevel
- @catchAllKeyword contextDef
- @highlightScope entity.name
-@keyword contextDef
- @constructors
+abstract rootLevel
+cellType anyWord
+cellType string
+ highlightScope string
+cellType comment
+ highlightScope comment
+cellType float
+cellType bool
+cellType true
+ regex true
+ highlightScope constant.numeric
+cellType scope
+ highlightScope variable.parameter
+cellType regex
+ highlightScope string.regexp
+cellType contextName
+keyword any rootLevel
+ catchAllCellType anyWord
+keyword name any
+ highlightScope constant.language
+keyword version rootLevel
+ highlightScope constant.language
+ cells float
+keyword file_extensions any
+ highlightScope constant.language
+keyword global_scope any
+ highlightScope constant.language
+keyword hidden rootLevel
+ highlightScope constant.language
+ cells bool
+keyword first_line_match any
+ catchAllCellType string
+ highlightScope constant.language
+keyword variableDef
+ cells anyWord
+ catchAllCellType regex
+keyword variables any
+ catchAllKeyword variableDef
+ highlightScope entity.name
+keyword contexts rootLevel
+ catchAllKeyword contextDef
+ highlightScope entity.name
+keyword contextDef
+ constructors
   nodejs ./built/lime.js ContextNode
   browser lime.ContextNode
- @keywords
+ keywords
   match
   include
   meta_include_prototype
   meta_scope
   meta_content_scope
   clear_scopes
-@keyword set_context contextDef
- @highlightScope keyword.operator
-@keyword push_context contextDef
- @highlightScope keyword.operator
-@keyword include
- @columns contextName
- @highlightScope keyword.control.import
-@keyword meta_include_prototype
- @columns bool
- @description Used to stop the current context from automatically including the prototype context.
-@keyword meta_scope
- @columns scope
- @highlightScope keyword.declaration
- @description This assigns the given scope to all text within this context, including the patterns that push the context onto the stack and pop it off.
-@keyword #
- @columns comment*
- @highlightScope comment
- @any
-@keyword meta_content_scope
- @columns scope
- @highlightScope keyword.declaration
- @description Same as meta_scope, but does not apply to the text that triggers the context (e.g., in the above string example, the content scope would not get applied to the quote characters).
-@keyword clear_scopes
- @description This setting allows removing scope names from the current stack. It can be an integer, or the value true to remove all scope names. It is applied before meta_scope and meta_content_scope. This is typically only used when one syntax is embedding another.
- @columns any*
-@keyword push any
- @description Can be a scope, scope[], or anonymous context.
- @highlightScope keyword.operator
-@keyword pop
- @description True is only acceptable value
- @columns true
- @highlightScope keyword.operator
-@keyword scope
- @columns scope
- @highlightScope keyword.declaration
-@keyword set push
-@keyword embed
-@keyword captures
- @catchAllKeyword capture
-@keyword capture
- @columns scope
-@keyword match
- @constructors
+keyword set_context contextDef
+ highlightScope keyword.operator
+keyword push_context contextDef
+ highlightScope keyword.operator
+keyword include
+ cells contextName
+ highlightScope keyword.control.import
+keyword meta_include_prototype
+ cells bool
+ description Used to stop the current context from automatically including the prototype context.
+keyword meta_scope
+ cells scope
+ highlightScope keyword.declaration
+ description This assigns the given scope to all text within this context, including the patterns that push the context onto the stack and pop it off.
+keyword #
+ catchAllCellType comment
+ highlightScope comment
+ any
+keyword meta_content_scope
+ cells scope
+ highlightScope keyword.declaration
+ description Same as meta_scope, but does not apply to the text that triggers the context (e.g., in the above string example, the content scope would not get applied to the quote characters).
+keyword clear_scopes
+ description This setting allows removing scope names from the current stack. It can be an integer, or the value true to remove all scope names. It is applied before meta_scope and meta_content_scope. This is typically only used when one syntax is embedding another.
+ catchAllCellType anyWord
+keyword push any
+ description Can be a scope, scope[], or anonymous context.
+ highlightScope keyword.operator
+keyword pop
+ description True is only acceptable value
+ cells true
+ highlightScope keyword.operator
+keyword scope
+ cells scope
+ highlightScope keyword.declaration
+keyword set push
+keyword embed
+keyword captures
+ catchAllKeyword capture
+keyword capture
+ cells scope
+keyword match
+ constructors
   nodejs ./built/lime.js MatchNode
   browser lime.MatchNode
- @columns regex*
- @highlightScope keyword.control
- @keywords
+ catchAllCellType regex
+ highlightScope keyword.control
+ keywords
   push
   scope
   push_context
@@ -115,7 +117,7 @@
   set
   embed
   captures
-@keyword error
- @constructors
+keyword error
+ constructors
   nodejs ErrorNode
   browser ErrorNode
